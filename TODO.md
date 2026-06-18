@@ -16,6 +16,6 @@ Source docs: `FullPETOSArchitecture.txt`, `TODO_Layer_VALIDATION.md`
   - [x] Rename `LICENSE.md` to `LICENSE`.
   - [x] Update `CODEOWNERS`.
   - [x] Create `README.md` and `PULL_REQUEST_TEMPLATE.md`.
-- [ ] Ensure `mkdocs build --strict` succeeds.
+- [x] Ensure `mkdocs build --strict` succeeds.
 - [x] Ensure `python validate.py` runs and produces/updates expected outputs.
-- [ ] Update this TODO.md checkboxes as each step completes.
+- [x] Update this TODO.md checkboxes as each step completes.
