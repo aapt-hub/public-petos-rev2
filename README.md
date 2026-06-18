@@ -3,6 +3,7 @@
 This repository is the single source of truth for engineering knowledge, architecture patterns, and operational best practices. It is built using a "docs-as-code" philosophy and rendered as a static site using [MkDocs](https://www.mkdocs.org/).
 
 The core knowledge base is organized into technology `stacks/`.
+All contributions are validated against a series of automated checks to ensure quality and consistency.
 
 ## Repository Structure
 
