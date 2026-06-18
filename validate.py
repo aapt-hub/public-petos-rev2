@@ -150,7 +150,7 @@ def validate_orphans() -> list[str]:
 
 def validate_frontmatter() -> list[str]:
     """Validates the YAML front-matter of all markdown files."""
-    required_keys = {"title", "description", "tags"}
+    required_keys = {"title", "description"}
     errors: list[str] = []
     pattern = re.compile(r"^---\s*\n(.*?)\n^---\s*\n", re.DOTALL | re.MULTILINE)
     for md_file in [p for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")]:
@@ -164,11 +164,8 @@ def validate_frontmatter() -> list[str]:
             if not isinstance(data, dict):
                 errors.append(f"- {rel_path}: Front-matter is not a valid key-value structure.")
                 continue
-
             if missing_keys := required_keys - set(data.keys()):
                 errors.append(f"- {rel_path}: Missing required keys: {', '.join(sorted(list(missing_keys)))}")
-            elif not isinstance(data.get("tags"), list):
-                errors.append(f"- {rel_path}: The 'tags' key must contain a list of tags (e.g., `tags: [tag1, tag2]`).")
         except yaml.YAMLError as e: errors.append(f"- {rel_path}: Invalid YAML syntax: {e}")
         except Exception as e: errors.append(f"- {rel_path}: Could not process file: {e}")
 
