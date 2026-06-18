@@ -1,0 +1,45 @@
+site_name: public-petos-rev2
+site_url: https://example.com
+repo_url: https://example.com
+
+theme:
+  name: material
+
+docs_dir: stacks
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+plugins:
+  - search
+
+strict: true
+
+nav:
+  - Home: index.md
+
+  - Capabilities: capabilities/index.md
+
+  - Stacks:
+      - "Infrastructure": infrastructure/capabilities/index.md
+      - "Cloud Platforms": cloud-platforms/capabilities/index.md
+      - "Digital Workplace": digital-workplace/capabilities/index.md
+      - "Cybersecurity": cybersecurity/capabilities/index.md
+      - "Development & Automation": development-automation/capabilities/index.md
+      - "Data Platforms": data-platforms/capabilities/index.md
+      - "AI Engineering": ai-engineering/capabilities/index.md
+      - "Operations & Observability":
+          - "Overview": operations-observability/capabilities/index.md
+          - "Ops Agent Guide": operations-observability/agent.md
+      - "Service Management": service-management/capabilities/index.md
+      - "Migration Engineering": migration-engineering/capabilities/index.md
+      - "Business Continuity": business-continuity/capabilities/index.md
+      - "Architecture": architecture/capabilities/index.md
+      - "Governance & Compliance": governance-compliance/capabilities/index.md
+      - "Documentation Engineering": documentation-engineering/capabilities/index.md
+      - "Career Development": career-development/capabilities/index.md
+      - "Lessons Learned": lessons-learned/capabilities/index.md

@@ -1,0 +1,25 @@
+# Code owners (update to your org handles)
+
+# Stacks - The core knowledge base
+/stacks/ai-engineering/ @your-org/docs-team
+/stacks/architecture/ @your-org/architecture-team
+/stacks/business-continuity/ @your-org/docs-team
+/stacks/career-development/ @your-org/docs-team
+/stacks/cloud-platforms/ @your-org/docs-team
+/stacks/cybersecurity/ @your-org/docs-team
+/stacks/data-platforms/ @your-org/docs-team
+/stacks/development-automation/ @your-org/docs-team
+/stacks/digital-workplace/ @your-org/docs-team
+/stacks/documentation-engineering/ @your-org/docs-team
+/stacks/governance-compliance/ @your-org/docs-team
+/stacks/infrastructure/ @your-org/docs-team
+/stacks/lessons-learned/ @your-org/docs-team
+/stacks/migration-engineering/ @your-org/docs-team
+/stacks/operations-observability/ @your-org/docs-team
+/stacks/service-management/ @your-org/docs-team
+
+# Tooling
+/automation/ @your-org/automation-team
+
+# CI
+/.github/ @your-org/platform-team

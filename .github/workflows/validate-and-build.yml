@@ -1,0 +1,37 @@
+name: Validate and Build
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies (if any)
+        run: |
+          if [ -f automation/requirements.txt ]; then pip install -r automation/requirements.txt; fi
+          if [ -f automation/pyproject.toml ]; then pip install -e ./automation; fi
+
+      - name: Run validations
+        run: python automation/src/validate.py --report-file build/validation-report.md
+
+      - name: Upload Validation Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-report
+          path: build/validation-report.md
+
+      - name: Build MkDocs
+        run: |
+          pip install mkdocs mkdocs-material
+          mkdocs build --strict

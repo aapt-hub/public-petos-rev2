@@ -1,0 +1,806 @@
+# PETOS vNext Enterprise Knowledge Architecture
+
+## Core Philosophy
+
+PETOS should organize knowledge using:
+
+```text
+Domain
+├── Skills
+├── Technologies
+├── Operational Knowledge
+└── Architecture Knowledge
+```
+
+This allows PETOS to scale into:
+
+* Enterprise Engineering Knowledge Base
+* Runbook Platform
+* Troubleshooting System
+* Skill Graph
+* Career Development Platform
+* Architecture Repository
+* Operations Platform
+* AI-Assisted Engineering Brain
+
+---
+
+# 1. Infrastructure
+
+## Skills
+
+* Networking Fundamentals
+* TCP/IP
+* DNS
+* DHCP
+* Routing
+* Switching
+* Wireless
+* VPN
+* Firewalls
+* Load Balancing
+* Storage
+* SAN/NAS
+* Virtualization
+* SD-WAN
+* SASE
+* IPv6
+* Network Automation
+
+## Technologies
+
+* Cisco
+* Juniper
+* Aruba
+* Fortinet
+* Palo Alto
+* Cloudflare
+* VMware
+* Proxmox
+* Hyper-V
+* Nutanix
+* NetApp
+* Dell Storage
+
+## Operational Knowledge
+
+* DNS Troubleshooting
+* Network Diagnostics
+* VPN Troubleshooting
+* Firewall Analysis
+* Capacity Planning
+* Infrastructure Monitoring
+* Storage Troubleshooting
+* Performance Analysis
+
+## Architecture Knowledge
+
+* Network Segmentation
+* Zero Trust Networking
+* SD-WAN Architecture
+* SASE Architecture
+* High Availability Design
+* Infrastructure Reference Architectures
+
+---
+
+# 2. Cloud Platforms
+
+## Skills
+
+* Azure Administration
+* AWS Administration
+* Google Cloud Administration
+* Hybrid Cloud
+* Multi-Cloud
+* Landing Zones
+* Cloud Security
+* Cloud Networking
+* FinOps
+
+## Technologies
+
+* Azure
+* AWS
+* Google Cloud
+* OpenStack
+* Azure Arc
+* Azure Landing Zones
+
+## Operational Knowledge
+
+* Cloud Provisioning
+* Cost Optimization
+* Cloud Monitoring
+* Cloud Troubleshooting
+* Cloud Migration Validation
+
+## Architecture Knowledge
+
+* Landing Zones
+* Cloud Adoption Framework
+* Well-Architected Framework
+* Hybrid Cloud Design
+* Multi-Cloud Design
+* FinOps Architecture
+
+---
+
+# 3. Digital Workplace
+
+## Skills
+
+* Collaboration Platforms
+* Endpoint Management
+* Mobile Device Management
+* User Lifecycle Management
+* Digital Employee Experience
+
+## Technologies
+
+* Microsoft 365
+* Exchange Online
+* Teams
+* SharePoint
+* OneDrive
+* Intune
+* Google Workspace
+* Slack
+* Zoom
+* Nextcloud
+
+## Operational Knowledge
+
+* Mail Flow Troubleshooting
+* Endpoint Enrollment
+* Device Compliance
+* User Provisioning
+* User Offboarding
+* Collaboration Support
+
+## Architecture Knowledge
+
+* Modern Workplace Design
+* Collaboration Architecture
+* Endpoint Management Architecture
+* Workplace Governance
+
+---
+
+# 4. Cybersecurity
+
+## Skills
+
+* Security Operations
+* Threat Hunting
+* Incident Response
+* Digital Forensics
+* Vulnerability Management
+* Identity Security
+* Application Security
+* DevSecOps
+* Cloud Security
+
+## Technologies
+
+* Microsoft Defender
+* Sentinel
+* CrowdStrike
+* Wazuh
+* Splunk
+* Elastic Security
+* Nessus
+* Tenable
+* Qualys
+
+## Operational Knowledge
+
+* Incident Response Runbooks
+* Threat Investigation
+* Vulnerability Remediation
+* Security Monitoring
+* IOC Validation
+* Security Diagnostics
+
+## Architecture Knowledge
+
+* Zero Trust
+* Defense in Depth
+* Security Reference Architectures
+* Secure SDLC
+* Cloud Security Patterns
+
+---
+
+# 5. Development & Automation
+
+## Skills
+
+* Python
+* PowerShell
+* Bash
+* Go
+* C#
+* JavaScript
+* HTML
+* CSS
+* YAML
+* JSON
+* APIs
+* CI/CD
+* Infrastructure as Code
+* Software Testing
+
+## Technologies
+
+* GitHub
+* GitLab
+* Gitea
+* Jenkins
+* Terraform
+* OpenTofu
+* Ansible
+* Docker
+* Kubernetes
+
+## Operational Knowledge
+
+* CI/CD Troubleshooting
+* Pipeline Diagnostics
+* Script Debugging
+* Automation Validation
+* Code Reviews
+
+## Architecture Knowledge
+
+* Software Design Patterns
+* Infrastructure as Code Patterns
+* GitOps
+* CI/CD Architecture
+* Automation Frameworks
+
+---
+
+# 6. Data Platforms
+
+## Skills
+
+* SQL
+* Database Administration
+* Data Modeling
+* ETL
+* Analytics
+* Data Governance
+* Data Quality
+* Data Observability
+
+## Technologies
+
+* SQL Server
+* PostgreSQL
+* MariaDB
+* MySQL
+* Oracle
+* MongoDB
+* Redis
+* Elasticsearch
+
+## Operational Knowledge
+
+* Query Optimization
+* Database Troubleshooting
+* Replication Management
+* Backup Validation
+* ETL Troubleshooting
+
+## Architecture Knowledge
+
+* Data Warehouse
+* Lakehouse
+* Data Mesh
+* Data Fabric
+* High Availability Databases
+
+---
+
+# 7. AI Engineering
+
+## Skills
+
+* Prompt Engineering
+* RAG
+* Agents
+* MCP
+* Fine Tuning
+* AI Security
+* Model Evaluation
+* AI Governance
+
+## Technologies
+
+* OpenAI
+* Claude
+* Gemini
+* Ollama
+* Open WebUI
+* LangChain
+* LangGraph
+* Hermes
+* Llama
+* Mistral
+* Qwen
+
+## Operational Knowledge
+
+* Model Deployment
+* Agent Troubleshooting
+* Prompt Testing
+* AI Monitoring
+* RAG Validation
+
+## Architecture Knowledge
+
+* Agent Architectures
+* Multi-Agent Systems
+* RAG Architectures
+* MCP Architectures
+* AI Governance Models
+
+---
+
+# 8. Operations & Observability
+
+## Skills
+
+* Monitoring
+* Alerting
+* SRE
+* Troubleshooting
+* Capacity Planning
+* Chaos Engineering
+* AIOps
+
+## Technologies
+
+* Grafana
+* Prometheus
+* Loki
+* OpenTelemetry
+* ELK
+* Datadog
+* New Relic
+
+## Operational Knowledge
+
+* Alert Tuning
+* Root Cause Analysis
+* Log Analysis
+* Monitoring Design
+* Performance Diagnostics
+
+## Architecture Knowledge
+
+* Reliability Engineering
+* Observability Maturity Models
+* Monitoring Architecture
+* Chaos Engineering Patterns
+
+---
+
+# 9. Service Management
+
+## Skills
+
+* ITIL
+* Incident Management
+* Problem Management
+* Change Management
+* Asset Management
+* CMDB Design
+
+## Technologies
+
+* ServiceNow
+* Jira Service Management
+* ConnectWise
+* Kaseya
+* Freshservice
+
+## Operational Knowledge
+
+* SLA Management
+* Escalation Procedures
+* Ticket Workflows
+* Service Request Automation
+* CMDB Maintenance
+
+## Architecture Knowledge
+
+* ITSM Architecture
+* Service Mapping
+* Service Catalog Design
+* CMDB Models
+
+---
+
+# 10. Migration Engineering
+
+## Skills
+
+* Discovery
+* Assessment
+* Planning
+* Migration Execution
+* Validation
+* Modernization
+
+## Technologies
+
+* MigrationWiz
+* ShareGate
+* Quest
+* Azure Migrate
+
+## Operational Knowledge
+
+* Migration Runbooks
+* Cutover Procedures
+* Rollback Plans
+* Validation Checklists
+
+## Architecture Knowledge
+
+* Migration Patterns
+* Modernization Frameworks
+* Hybrid Migration Models
+
+---
+
+# 11. Business Continuity
+
+## Skills
+
+* Backup
+* Disaster Recovery
+* High Availability
+* Recovery Testing
+* Resilience Engineering
+
+## Technologies
+
+* Veeam
+* Rubrik
+* Cohesity
+* Commvault
+
+## Operational Knowledge
+
+* Backup Validation
+* Recovery Testing
+* DR Exercises
+* Cyber Recovery
+
+## Architecture Knowledge
+
+* HA Architecture
+* DR Architecture
+* Active/Active Design
+* Resilience Patterns
+
+---
+
+# 12. Architecture
+
+## Skills
+
+* Enterprise Architecture
+* Solution Architecture
+* Systems Thinking
+* Architecture Reviews
+
+## Technologies / Frameworks
+
+* TOGAF
+* ArchiMate
+* C4 Model
+* Mermaid
+
+## Operational Knowledge
+
+* ADR Processes
+* Architecture Reviews
+* Standards Validation
+
+## Architecture Knowledge
+
+* Domain Driven Design
+* Event Driven Architecture
+* Microservices
+* Reference Architectures
+* Architecture Governance
+
+---
+
+# 13. Governance & Compliance
+
+## Skills
+
+* Risk Management
+* Policy Development
+* Audit Readiness
+* Compliance Management
+* Cloud Governance
+* AI Governance
+
+## Technologies / Frameworks
+
+* NIST
+* CIS
+* ISO 27001
+* SOC2
+* PCI-DSS
+
+## Operational Knowledge
+
+* Audit Preparation
+* Compliance Reviews
+* Control Validation
+* Risk Assessments
+
+## Architecture Knowledge
+
+* Governance Models
+* Security Baselines
+* Compliance Architecture
+* Risk Frameworks
+
+---
+
+# 14. Documentation Engineering
+
+## Skills
+
+* Technical Writing
+* Documentation Architecture
+* Information Architecture
+* Knowledge Graph Design
+
+## Technologies
+
+* MkDocs
+* Mermaid
+* Obsidian
+* Markdown
+* Git
+
+## Operational Knowledge
+
+* Documentation Workflows
+* Knowledge Maintenance
+* Content Lifecycle Management
+
+## Architecture Knowledge
+
+* Docs-as-Code
+* Taxonomy Design
+* Metadata Models
+* Knowledge Graph Architectures
+
+---
+
+# 15. Career Development
+
+## Skills
+
+* Learning Strategy
+* Leadership
+* Communication
+* Mentorship
+* Interview Preparation
+
+## Technologies
+
+* Learning Platforms
+* Certification Platforms
+
+## Operational Knowledge
+
+* Learning Plans
+* Certification Roadmaps
+* Career Frameworks
+
+## Architecture Knowledge
+
+* Skill Graph Models
+* Competency Frameworks
+* Engineering Career Ladders
+
+---
+
+# 16. Lessons Learned
+
+## Skills
+
+* Root Cause Analysis
+* Failure Analysis
+* Continuous Improvement
+
+## Technologies
+
+* Postmortem Templates
+* Knowledge Repositories
+
+## Operational Knowledge
+
+* Incident Reviews
+* Postmortems
+* RCA Processes
+* Failure Catalog Maintenance
+
+## Architecture Knowledge
+
+* Failure Pattern Libraries
+* Anti-Patterns
+* Continuous Improvement Models
+* Operational Wisdom Frameworks
+
+---
+
+# Enterprise Cross-Domain Disciplines
+
+These are not pillars. They span multiple pillars and should have dedicated skill graphs, learning paths, runbooks, and knowledge indexes.
+
+## Identity & Access Management (IAM)
+
+### Skills
+
+* Authentication
+* Authorization
+* Federation
+* SSO
+* MFA
+* PAM
+* IGA
+* Conditional Access
+* Zero Trust Identity
+
+### Technologies
+
+* Active Directory
+* Entra ID
+* Okta
+* Keycloak
+* Ping Identity
+* CyberArk
+* BeyondTrust
+* Delinea
+
+### Operational Knowledge
+
+* User Onboarding
+* User Offboarding
+* Access Reviews
+* MFA Deployment
+* Federation Troubleshooting
+
+### Architecture Knowledge
+
+* Hybrid Identity
+* Passwordless Design
+* Identity Federation
+* Least Privilege
+* Zero Trust Identity
+
+---
+
+## Platform Engineering
+
+### Skills
+
+* Internal Developer Platforms
+* GitOps
+* Developer Experience
+* Self-Service Infrastructure
+* Kubernetes Platforms
+
+### Technologies
+
+* Kubernetes
+* OpenShift
+* Rancher
+* Backstage
+* ArgoCD
+* Crossplane
+* FluxCD
+* Terraform
+
+### Operational Knowledge
+
+* Platform Upgrades
+* Cluster Operations
+* GitOps Troubleshooting
+* Platform Health Validation
+
+### Architecture Knowledge
+
+* Platform-as-a-Product
+* Golden Paths
+* Internal Developer Platforms
+* GitOps Architectures
+
+---
+
+## Enterprise Applications
+
+### Skills
+
+* SaaS Administration
+* Application Governance
+* Licensing Management
+* Enterprise Integrations
+* API Integrations
+
+### Technologies
+
+* ServiceNow
+* Jira
+* Confluence
+* Salesforce
+* SAP
+* Dynamics 365
+* SharePoint
+* Notion
+
+### Operational Knowledge
+
+* License Management
+* Application Upgrades
+* SaaS Administration
+* Integration Troubleshooting
+
+### Architecture Knowledge
+
+* SaaS Architecture
+* Integration Architecture
+* Enterprise Application Architecture
+* API-First Design
+
+---
+
+## Project & Product Management
+
+### Skills
+
+* Agile
+* Scrum
+* Kanban
+* Product Management
+* Stakeholder Management
+* Roadmapping
+
+### Technologies
+
+* Jira
+* Azure DevOps
+* Monday.com
+* Asana
+* Confluence
+
+### Operational Knowledge
+
+* Sprint Planning
+* Release Management
+* Project Kickoff
+* Capacity Planning
+* Dependency Management
+
+### Architecture Knowledge
+
+* SAFe
+* Product Operating Models
+* Team Topologies
+* Value Stream Management
+* Engineering Operating Models
+
+```
+```

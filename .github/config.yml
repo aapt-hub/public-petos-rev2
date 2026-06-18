@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question in Slack
+    url: https://slack.com/app_redirect?channel=ops-monitoring # Replace with a real link to your support channel
+    about: Please ask and answer questions in the relevant support channel.
