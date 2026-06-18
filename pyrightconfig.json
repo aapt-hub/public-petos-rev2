@@ -1,0 +1,18 @@
+{
+  "include": [
+    "validate.py"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    ".venv",
+    "**/node_modules",
+    "**/.*",
+    "venv",
+    "site"
+  ],
+
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic",
+
+  "reportMissingImports": "warning"
+}

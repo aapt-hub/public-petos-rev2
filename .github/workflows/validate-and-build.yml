@@ -2,11 +2,28 @@ name: Validate and Build
 
 on:
   pull_request:
+    branches: [ main ]
+    paths:
+      - 'stacks/**'
+      - 'mkdocs.yml'
+      - 'validate.py'
+      - 'pyrightconfig.json'
+      - '.github/workflows/validate-and-build.yml'
   push:
     branches: [ main ]
+    paths:
+      - 'stacks/**'
+      - 'mkdocs.yml'
+      - 'validate.py'
+      - 'pyrightconfig.json'
+      - '.github/workflows/validate-and-build.yml'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  validate:
+  build-and-validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,13 +33,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies (if any)
-        run: |
-          if [ -f automation/requirements.txt ]; then pip install -r automation/requirements.txt; fi
-          if [ -f automation/pyproject.toml ]; then pip install -e ./automation; fi
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint and Type-Check Python Code
+        run: pyright
 
       - name: Run validations
-        run: python automation/src/validate.py --report-file build/validation-report.md
+        run: python validate.py --report-file build/validation-report.md
 
       - name: Upload Validation Report
         uses: actions/upload-artifact@v4
@@ -32,6 +58,24 @@ jobs:
           path: build/validation-report.md
 
       - name: Build MkDocs
-        run: |
-          pip install mkdocs mkdocs-material
-          mkdocs build --strict
+        run: mkdocs build --strict
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+  deploy:
+    needs: build-and-validate
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

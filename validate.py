@@ -19,6 +19,8 @@ except ImportError:
     print("ERROR: PyYAML is required. Please run 'pip install PyYAML'.", file=sys.stderr)
     sys.exit(1)
 
+from typing import Any
+
 # --- Constants and Helpers ---
 REPO_ROOT = Path(__file__).resolve().parent
 STACKS_DIR = REPO_ROOT / "stacks"
@@ -55,12 +57,14 @@ def validate_structure() -> list[str]:
         "service-management", "migration-engineering", "business-continuity", "architecture",
         "governance-compliance", "documentation-engineering", "career-development", "lessons-learned",
     ]
-    errors = []
+    errors: list[str] = []
     if not STACKS_DIR.is_dir():
         errors.append(f"FATAL: `stacks` directory not found at {STACKS_DIR}")
         return errors
 
-    missing_dirs, missing_indexes, missing_caps = [], [], []
+    missing_dirs: list[str] = []
+    missing_indexes: list[str] = []
+    missing_caps: list[str] = []
     for stack in EXPECTED_STACKS:
         stack_dir = STACKS_DIR / stack
         if not stack_dir.is_dir():
@@ -80,7 +84,7 @@ def validate_structure() -> list[str]:
 def validate_codeowners() -> list[str]:
     """Validates that .github/CODEOWNERS is in sync with `stacks/` directories."""
     codeowners_path = REPO_ROOT / ".github" / "CODEOWNERS"
-    errors = []
+    errors: list[str] = []
     if not codeowners_path.is_file():
         errors.append(f"CODEOWNERS file not found at {codeowners_path}")
         if (REPO_ROOT / ".github" / "CODEOWNERS.md").is_file():
@@ -88,7 +92,7 @@ def validate_codeowners() -> list[str]:
         return errors
 
     filesystem_stacks = {d.name for d in STACKS_DIR.iterdir() if d.is_dir()}
-    codeowners_stacks = set()
+    codeowners_stacks: set[str] = set()
     stack_owner_pattern = re.compile(r"^\s*/stacks/([a-zA-Z0-9_-]+)/?\s+@\S+")
     content = codeowners_path.read_text(encoding="utf-8")
     for line in content.splitlines():
@@ -106,7 +110,7 @@ def validate_links() -> list[str]:
     """Validates all relative markdown links and anchors in the `stacks/` directory."""
     link_regex = re.compile(r"\[[^\]]+\]\(((?!https?://|mailto:)[^)\s]+)\)")
     all_markdown_files = list(STACKS_DIR.rglob("*.md"))
-    broken_links = []
+    broken_links: list[str] = []
     for md_file in all_markdown_files:
         for link in link_regex.findall(md_file.read_text(encoding="utf-8")):
             path_part, anchor_part = (unquote(link).split("#", 1) + [None])[:2]
@@ -122,20 +126,20 @@ def validate_links() -> list[str]:
 def validate_orphans() -> list[str]:
     """Finds orphaned markdown files that are not linked or in the site navigation."""
     all_md_files = {p.resolve() for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")}
-    linked_files, nav_files = set(), set()
-    errors = []
+    linked_files: set[Path] = set()
+    nav_files: set[Path] = set()
+    errors: list[str] = []
     link_regex = re.compile(r"\[[^\]]+\]\(((?!https?://|mailto:)[^)\s]+)\)")
     for md_file in all_md_files:
         for link in link_regex.findall(md_file.read_text(encoding="utf-8")):
             if (path_part := unquote(link).split("#")[0]) and path_part.endswith(".md"):
                 linked_files.add((md_file.parent / Path(path_part)).resolve())
 
-    with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    def extract_nav(item):
+    with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f: config = yaml.safe_load(f)
+    def extract_nav(item: Any):
         if isinstance(item, str) and item.endswith(".md"): nav_files.add((STACKS_DIR / item).resolve())
-        elif isinstance(item, dict): [extract_nav(v) for v in item.values()]
-        elif isinstance(item, list): [extract_nav(i) for i in item]
+        elif isinstance(item, dict): [extract_nav(v) for v in item.values()] # type: ignore
+        elif isinstance(item, list): [extract_nav(i) for i in item] # type: ignore
     if "nav" in config: extract_nav(config["nav"])
 
     if orphaned_files := all_md_files - linked_files - nav_files:
@@ -146,8 +150,8 @@ def validate_orphans() -> list[str]:
 
 def validate_frontmatter() -> list[str]:
     """Validates the YAML front-matter of all markdown files."""
-    required_keys = {"title", "description"}
-    errors = []
+    required_keys = {"title", "description", "tags"}
+    errors: list[str] = []
     pattern = re.compile(r"^---\s*\n(.*?)\n^---\s*\n", re.DOTALL | re.MULTILINE)
     for md_file in [p for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")]:
         rel_path = md_file.relative_to(REPO_ROOT)
@@ -160,8 +164,11 @@ def validate_frontmatter() -> list[str]:
             if not isinstance(data, dict):
                 errors.append(f"- {rel_path}: Front-matter is not a valid key-value structure.")
                 continue
+
             if missing_keys := required_keys - set(data.keys()):
                 errors.append(f"- {rel_path}: Missing required keys: {', '.join(sorted(list(missing_keys)))}")
+            elif not isinstance(data.get("tags"), list):
+                errors.append(f"- {rel_path}: The 'tags' key must contain a list of tags (e.g., `tags: [tag1, tag2]`).")
         except yaml.YAMLError as e: errors.append(f"- {rel_path}: Invalid YAML syntax: {e}")
         except Exception as e: errors.append(f"- {rel_path}: Could not process file: {e}")
 
@@ -169,11 +176,11 @@ def validate_frontmatter() -> list[str]:
 
 def write_report(report_path: Path, summary: dict[str, str], details: dict[str, list[str]]):
     """Writes a validation summary to a markdown file."""
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     report_content = [
         "# Validation Report",
-        f"**Generated on:** {datetime.utcnow().isoformat()}Z",
+        f"**Generated on:** {datetime.now(timezone.utc).isoformat()}",
         "\n## Summary\n",
         "| Check           | Status |",
         "| --------------- | ------ |",
@@ -209,8 +216,8 @@ def main() -> int:
     checks_to_run = list(all_checks.keys()) if "all" in args.checks else args.checks
     print(f"Running validations: {', '.join(checks_to_run)}\n" + "-" * 40)
 
-    summary = {}
-    details = {}
+    summary: dict[str, str] = {}
+    details: dict[str, list[str]] = {}
     for name in checks_to_run:
         print(f"Running {name} validation...")
         try:

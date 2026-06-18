@@ -21,8 +21,13 @@ on:
       - 'stacks/**'
       - 'mkdocs.yml'
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  validate-docs:
+  build-and-validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -41,16 +46,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install dependencies
+      - name: Install Dependencies & Linter
         run: |
-          pip install mkdocs-material
-          if [ -f automation/requirements.txt ]; then
-            pip install -r automation/requirements.txt
-          fi
+          pip install mkdocs-material PyYAML pyright
+
+      - name: Lint and Type-Check Python Code
+        run: pyright
 
       - name: Run Comprehensive Validation & Generate Report
         run: |
-          python automation/src/validate.py --report-file build/validation-report.md
+          python validate.py --report-file build/validation-report.md
 
       - name: Upload Validation Report
         uses: actions/upload-artifact@v4
@@ -63,3 +68,23 @@ jobs:
         # This step ensures the site compiles without errors and that all
         # navigation links in mkdocs.yml are valid.
         run: mkdocs build --strict
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+  deploy:
+    needs: build-and-validate
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
