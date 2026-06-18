@@ -91,6 +91,10 @@ def validate_codeowners() -> list[str]:
             errors.append("Hint: Found 'CODEOWNERS.md'. It should be named 'CODEOWNERS'.")
         return errors
 
+    if not STACKS_DIR.is_dir():
+        # This check depends on the stacks directory existing. The `structure` check will report the missing directory.
+        return []
+
     filesystem_stacks = {d.name for d in STACKS_DIR.iterdir() if d.is_dir()}
     codeowners_stacks: set[str] = set()
     stack_owner_pattern = re.compile(r"^\s*/stacks/([a-zA-Z0-9_-]+)/?\s+@\S+")
@@ -137,9 +141,15 @@ def validate_orphans() -> list[str]:
 
     with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f: config = yaml.safe_load(f)
     def extract_nav(item: Any):
-        if isinstance(item, str) and item.endswith(".md"): nav_files.add((STACKS_DIR / item).resolve())
-        elif isinstance(item, dict): [extract_nav(v) for v in item.values()] # type: ignore
-        elif isinstance(item, list): [extract_nav(i) for i in item] # type: ignore
+        """Recursively parse the mkdocs.yml 'nav' structure to find all file paths."""
+        if isinstance(item, str) and item.endswith(".md"):
+            nav_files.add((STACKS_DIR / item).resolve())
+        elif isinstance(item, dict):
+            for v in item.values():
+                extract_nav(v)
+        elif isinstance(item, list):
+            for i in item:
+                extract_nav(i)
     if "nav" in config: extract_nav(config["nav"])
 
     if orphaned_files := all_md_files - linked_files - nav_files:
