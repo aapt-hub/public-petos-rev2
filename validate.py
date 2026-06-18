@@ -25,6 +25,19 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent
 STACKS_DIR = REPO_ROOT / "stacks"
 _SLUG_CACHE: dict[Path, set[str]] = {}
+_ALL_MD_FILES_CACHE: list[Path] | None = None
+
+def get_all_markdown_files() -> list[Path]:
+    """Returns a cached list of all markdown files in STACKS_DIR, excluding audit reports."""
+    global _ALL_MD_FILES_CACHE
+    if _ALL_MD_FILES_CACHE is None:
+        if not STACKS_DIR.is_dir():
+            _ALL_MD_FILES_CACHE = []
+        else:
+            _ALL_MD_FILES_CACHE = [
+                p for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")
+            ]
+    return _ALL_MD_FILES_CACHE
 
 def slugify(text: str) -> str:
     """Converts a heading string to a URL-friendly slug."""
@@ -113,9 +126,8 @@ def validate_codeowners() -> list[str]:
 def validate_links() -> list[str]:
     """Validates all relative markdown links and anchors in the `stacks/` directory."""
     link_regex = re.compile(r"\[[^\]]+\]\(((?!https?://|mailto:)[^)\s]+)\)")
-    all_markdown_files = list(STACKS_DIR.rglob("*.md"))
     broken_links: list[str] = []
-    for md_file in all_markdown_files:
+    for md_file in get_all_markdown_files():
         for link in link_regex.findall(md_file.read_text(encoding="utf-8")):
             path_part, anchor_part = (unquote(link).split("#", 1) + [None])[:2]
             target_file = md_file if not path_part else (md_file.parent / Path(path_part)).resolve()
@@ -129,12 +141,11 @@ def validate_links() -> list[str]:
 
 def validate_orphans() -> list[str]:
     """Finds orphaned markdown files that are not linked or in the site navigation."""
-    all_md_files = {p.resolve() for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")}
+    all_md_files = {p.resolve() for p in get_all_markdown_files()}
     linked_files: set[Path] = set()
     nav_files: set[Path] = set()
-    errors: list[str] = []
     link_regex = re.compile(r"\[[^\]]+\]\(((?!https?://|mailto:)[^)\s]+)\)")
-    for md_file in all_md_files:
+    for md_file in get_all_markdown_files():
         for link in link_regex.findall(md_file.read_text(encoding="utf-8")):
             if (path_part := unquote(link).split("#")[0]) and path_part.endswith(".md"):
                 linked_files.add((md_file.parent / Path(path_part)).resolve())
@@ -145,12 +156,11 @@ def validate_orphans() -> list[str]:
         if isinstance(item, str) and item.endswith(".md"):
             nav_files.add((STACKS_DIR / item).resolve())
         elif isinstance(item, dict):
-            for v in item.values():
-                extract_nav(v)
+            [extract_nav(v) for v in item.values()] # type: ignore
         elif isinstance(item, list):
-            for i in item:
-                extract_nav(i)
+            [extract_nav(i) for i in item] # type: ignore
     if "nav" in config: extract_nav(config["nav"])
+    errors: list[str] = []
 
     if orphaned_files := all_md_files - linked_files - nav_files:
         errors.append("Found orphaned markdown files:")
@@ -163,7 +173,7 @@ def validate_frontmatter() -> list[str]:
     required_keys = {"title", "description", "tags"}
     errors: list[str] = []
     pattern = re.compile(r"^---\s*\n(.*?)\n^---\s*\n", re.DOTALL | re.MULTILINE)
-    for md_file in [p for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")]:
+    for md_file in get_all_markdown_files():
         rel_path = md_file.relative_to(REPO_ROOT)
         try:
             match = pattern.match(md_file.read_text(encoding="utf-8"))
