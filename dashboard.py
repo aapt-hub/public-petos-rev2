@@ -4,7 +4,7 @@ import threading
 from datetime import datetime, timezone
 from threading import Lock
 
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, jsonify, redirect, render_template, url_for
 
 # Assuming validate.py is in the same directory.
 # We import the validation functions and the slug cache to allow clearing it.
@@ -70,6 +70,14 @@ def dashboard():
         # Pass a copy to the template to prevent race conditions during rendering
         current_results = validation_results.copy()
     return render_template("dashboard.html", results=current_results)
+
+
+@app.route("/status")
+def validation_status():
+    """Returns the current validation status as JSON."""
+    with _RESULTS_LOCK:
+        status = validation_results["status"]
+    return jsonify({"status": status})
 
 
 @app.route("/run-validation")

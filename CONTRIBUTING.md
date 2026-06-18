@@ -38,3 +38,13 @@ python validate.py
 # Run the MkDocs strict build check
 python -m mkdocs build --strict
 ```
+
+### 4. Use the Validation Dashboard (Optional)
+
+For a user-friendly way to run all validation checks, you can use the web-based dashboard. First, ensure Flask is installed (`pip install Flask`), then run the server.
+
+```bash
+python dashboard.py
+```
+The dashboard will be available at `http://127.0.0.1:5001`.
+```

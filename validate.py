@@ -150,7 +150,7 @@ def validate_orphans() -> list[str]:
 
 def validate_frontmatter() -> list[str]:
     """Validates the YAML front-matter of all markdown files."""
-    required_keys = {"title", "description"}
+    required_keys = {"title", "description", "tags"}
     errors: list[str] = []
     pattern = re.compile(r"^---\s*\n(.*?)\n^---\s*\n", re.DOTALL | re.MULTILINE)
     for md_file in [p for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")]:
@@ -164,8 +164,23 @@ def validate_frontmatter() -> list[str]:
             if not isinstance(data, dict):
                 errors.append(f"- {rel_path}: Front-matter is not a valid key-value structure.")
                 continue
+
             if missing_keys := required_keys - set(data.keys()):
                 errors.append(f"- {rel_path}: Missing required keys: {', '.join(sorted(list(missing_keys)))}")
+                continue  # Can't validate tags if the key is missing
+
+            # Validate tags format and content
+            tags = data.get("tags")
+            if not isinstance(tags, list):
+                errors.append(f"- {rel_path}: The 'tags' key must contain a list (e.g., `tags: [tag1, tag2]`).")
+                continue
+
+            invalid_tags = []
+            for tag in tags:
+                if not isinstance(tag, str) or tag != tag.lower() or " " in tag:
+                    invalid_tags.append(f"'{tag}'")
+            if invalid_tags:
+                errors.append(f"- {rel_path}: Found invalid tags ({', '.join(invalid_tags)}). Tags must be lowercase strings with no spaces.")
         except yaml.YAMLError as e: errors.append(f"- {rel_path}: Invalid YAML syntax: {e}")
         except Exception as e: errors.append(f"- {rel_path}: Could not process file: {e}")
 
@@ -206,11 +221,13 @@ def main() -> int:
         "links": validate_links, "orphans": validate_orphans, "frontmatter": validate_frontmatter,
     }
     parser = argparse.ArgumentParser(description="PETOS Knowledge Base Validator.", formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("checks", nargs="*", choices=list(all_checks.keys()) + ["all"], default=["all"], help=f"Which check(s) to run. Options: {', '.join(all_checks.keys())}. Default is 'all'.")
+    parser.add_argument("checks", nargs="*", choices=list(all_checks.keys()) + ["all"], help=f"Which check(s) to run. Options: {', '.join(all_checks.keys())}. If none are specified, 'all' is run.")
     parser.add_argument("--report-file", type=Path, help="Path to write a markdown report file.")
     args = parser.parse_args()
 
-    checks_to_run = list(all_checks.keys()) if "all" in args.checks else args.checks
+    # If no checks are provided on the command line, default to running all.
+    checks_provided = args.checks if args.checks else ["all"]
+    checks_to_run = list(all_checks.keys()) if "all" in checks_provided else checks_provided
     print(f"Running validations: {', '.join(checks_to_run)}\n" + "-" * 40)
 
     summary: dict[str, str] = {}
@@ -218,27 +235,28 @@ def main() -> int:
     for name in checks_to_run:
         print(f"Running {name} validation...")
         try:
-            errors = all_checks[name]()
-            if errors:
+            if errors := all_checks[name]():
                 summary[name] = "FAILED"
                 details[name] = errors
-                print(f"{name.title()} validation FAILED.")
-                for error in errors:
-                    print(error)
             else:
                 summary[name] = "PASSED"
-                print(f"{name.title()} validation: PASS")
         except Exception as e:
             summary[name] = "CRASHED"
             details[name] = [f"The check crashed with an unhandled exception: {e}"]
-            print(f"{name.title()} validation CRASHED.\n  ERROR: {e}")
-        print("-" * 40)
 
     print("\n--- Validation Summary ---")
     total_failures = 0
     for name, status in summary.items():
         print(f"{name:<15}: {status}")
         if status != "PASSED": total_failures += 1
+    print("-" * 28)
+
+    if details:
+        print("\n--- Failure Details ---")
+        for name, errors in details.items():
+            print(f"\n[{name.upper()}]")
+            for error in errors:
+                print(error)
 
     if args.report_file:
         write_report(args.report_file, summary, details)
