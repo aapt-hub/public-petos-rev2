@@ -95,6 +95,8 @@ def trigger_validation():
 
         # Run validation in a background thread to not block the request
         thread = threading.Thread(target=run_all_validations)
+        # Daemon threads allow the main application to exit even if the thread is still running.
+        thread.daemon = True
         thread.start()
     return redirect(url_for("dashboard"))
 

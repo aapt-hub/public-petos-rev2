@@ -116,7 +116,7 @@ def validate_links() -> list[str]:
             path_part, anchor_part = (unquote(link).split("#", 1) + [None])[:2]
             target_file = md_file if not path_part else (md_file.parent / Path(path_part)).resolve()
             if not target_file.is_file():
-                broken_links.append(f"In File: {md_file.relative_to(REPO_ROOT)}\n  Link: '{link}'\n  Reason: File not found.")
+                broken_links.append(f"In File: {md_file.relative_to(REPO_ROOT)}\n  Link: '{link}'\n  Reason: Target file not found at '{target_file.relative_to(REPO_ROOT)}'.")
                 continue
             if anchor_part and anchor_part not in get_slugs_from_file(target_file):
                 broken_links.append(f"In File: {md_file.relative_to(REPO_ROOT)}\n  Link: '{link}'\n  Reason: Anchor '#{anchor_part}' not found in {target_file.relative_to(REPO_ROOT)}.")
