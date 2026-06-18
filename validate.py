@@ -221,9 +221,15 @@ def main() -> int:
         "links": validate_links, "orphans": validate_orphans, "frontmatter": validate_frontmatter,
     }
     parser = argparse.ArgumentParser(description="PETOS Knowledge Base Validator.", formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("checks", nargs="*", choices=list(all_checks.keys()) + ["all"], help=f"Which check(s) to run. Options: {', '.join(all_checks.keys())}. If none are specified, 'all' is run.")
+    parser.add_argument("checks", nargs="*", help=f"Which check(s) to run. Options: {', '.join(all_checks.keys())}. If none are specified, 'all' is run.")
     parser.add_argument("--report-file", type=Path, help="Path to write a markdown report file.")
     args = parser.parse_args()
+
+    # Manually validate choices to avoid argparse quirks with nargs='*' and an empty list.
+    valid_choices = set(all_checks.keys()) | {"all"}
+    if invalid_checks := set(args.checks) - valid_choices:
+        invalid_str = "', '".join(sorted(list(invalid_checks)))
+        parser.error(f"argument checks: invalid choice: '{invalid_str}' (choose from {', '.join(sorted(list(valid_choices)))})")
 
     # If no checks are provided on the command line, default to running all.
     checks_provided = args.checks if args.checks else ["all"]
