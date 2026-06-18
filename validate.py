@@ -12,6 +12,7 @@ import re
 from datetime import datetime, timezone
 import sys
 from pathlib import Path
+from functools import lru_cache
 from urllib.parse import unquote
 
 try:
@@ -26,39 +27,31 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent
 STACKS_DIR = REPO_ROOT / "stacks"
 _SLUG_CACHE: dict[Path, set[str]] = {}
-_MKDOCS_CONFIG_CACHE: dict[str, Any] | None = None
-_ALL_MD_FILES_CACHE: list[Path] | None = None
 
 def clear_caches():
     """Clears all in-memory caches used by validation functions."""
     _SLUG_CACHE.clear()
-    global _ALL_MD_FILES_CACHE
-    _ALL_MD_FILES_CACHE = None
-    global _MKDOCS_CONFIG_CACHE
-    _MKDOCS_CONFIG_CACHE = None
+    get_mkdocs_config.cache_clear()
+    get_all_markdown_files.cache_clear()
 
+@lru_cache(maxsize=1)
 def get_mkdocs_config() -> dict[str, Any]:
     """Reads and caches the content of mkdocs.yml."""
-    global _MKDOCS_CONFIG_CACHE
-    if _MKDOCS_CONFIG_CACHE is None:
-        try:
-            with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f:
-                _MKDOCS_CONFIG_CACHE = yaml.safe_load(f) or {}
-        except (IOError, yaml.YAMLError):
-            _MKDOCS_CONFIG_CACHE = {}
-    return _MKDOCS_CONFIG_CACHE
+    try:
+        with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+            if isinstance(data, dict):
+                return data
+            return {}  # Return empty dict if not a dict or is None
+    except (IOError, yaml.YAMLError):
+        return {}
 
+@lru_cache(maxsize=1)
 def get_all_markdown_files() -> list[Path]:
     """Returns a cached list of all markdown files in STACKS_DIR, excluding audit reports."""
-    global _ALL_MD_FILES_CACHE
-    if _ALL_MD_FILES_CACHE is None:
-        if not STACKS_DIR.is_dir():
-            _ALL_MD_FILES_CACHE = []
-        else:
-            _ALL_MD_FILES_CACHE = [
-                p for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")
-            ]
-    return _ALL_MD_FILES_CACHE
+    if not STACKS_DIR.is_dir():
+        return []
+    return [p for p in STACKS_DIR.rglob("*.md") if not p.name.startswith("AUDIT_REPORT")]
 
 def slugify(text: str) -> str:
     """Converts a heading string to a URL-friendly slug."""
@@ -343,4 +336,4 @@ def main() -> int:
     return 0
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())
