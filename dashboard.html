@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PETOS Validation Dashboard</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 2em; background-color: #f4f4f9; color: #333; }
+        h1, h2, h3 { color: #2c3e50; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status-box { padding: 0.5em 1em; border-radius: 5px; font-weight: bold; text-align: center; }
+        .status-PASSED { background-color: #e8f5e9; color: #2e7d32; }
+        .status-FAILED { background-color: #ffebee; color: #c62828; }
+        .status-CRASHED { background-color: #fff3e0; color: #ef6c00; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        .details { margin-top: 1em; }
+        .details pre { background-color: #2d2d2d; color: #f1f1f1; padding: 1em; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+        .button { background-color: #3498db; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; border: none; font-size: 1em; cursor: pointer; }
+        .button:hover { background-color: #2980b9; }
+        .button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .info { background: #e7f3fe; border-left: 6px solid #2196F3; padding: 1em; margin-bottom: 1em; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PETOS Validation Dashboard</h1>
+
+        <div class="info">
+            <div>
+                <p><strong>Status:</strong> {{ results.status }}</p>
+                {% if results.last_run %}
+                    <p><strong>Last Run:</strong> {{ results.last_run.strftime('%Y-%m-%d %H:%M:%S %Z') }}</p>
+                {% endif %}
+            </div>
+            <form action="/run-validation" method="get">
+                <button type="submit" class="button" {% if results.status == 'Running' %}disabled{% endif %}>
+                    {% if results.status == 'Running' %}
+                        Validation in Progress...
+                    {% else %}
+                        Run All Validations
+                    {% endif %}
+                </button>
+            </form>
+        </div>
+
+        <h2>Summary</h2>
+        {% if results.summary %}
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Check</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for name, status in results.summary.items() %}
+                    <tr>
+                        <td>{{ name.title() }}</td>
+                        <td><div class="status-box status-{{ status }}">{{ status }}</div></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No validation has been run yet. Click the button above to start.</p>
+        {% endif %}
+
+        {% if results.details %}
+            <h2>Failure Details</h2>
+            {% for name, errors in results.details.items() %}
+                <div class="details">
+                    <h3>{{ name.title() }} Validation Failed</h3>
+                    <pre>{{ errors | join('\n') }}</pre>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        // This script handles auto-refreshing the page after a validation run completes.
+        (function() {
+            const currentStatus = "{{ results.status }}";
+
+            if (currentStatus === 'Running') {
+                // If validation is running when the page loads, start polling for completion.
+                const statusInterval = setInterval(() => {
+                    fetch('/status')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'Finished') {
+                                // Once finished, clear the interval and reload the page.
+                                clearInterval(statusInterval);
+                                window.location.reload();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching validation status:', error);
+                            clearInterval(statusInterval);
+                        });
+                }, 2000); // Poll every 2 seconds.
+            }
+        })();
+    </script>
+</body>
+</html>

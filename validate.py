@@ -27,6 +27,12 @@ STACKS_DIR = REPO_ROOT / "stacks"
 _SLUG_CACHE: dict[Path, set[str]] = {}
 _ALL_MD_FILES_CACHE: list[Path] | None = None
 
+def clear_caches():
+    """Clears all in-memory caches used by validation functions."""
+    _SLUG_CACHE.clear()
+    global _ALL_MD_FILES_CACHE
+    _ALL_MD_FILES_CACHE = None
+
 def get_all_markdown_files() -> list[Path]:
     """Returns a cached list of all markdown files in STACKS_DIR, excluding audit reports."""
     global _ALL_MD_FILES_CACHE
@@ -64,13 +70,34 @@ def get_slugs_from_file(file_path: Path) -> set[str]:
 
 def validate_structure() -> list[str]:
     """Validates Layers 1 & 2: stack directories, indexes, and capabilities pages."""
-    EXPECTED_STACKS = [
-        "infrastructure", "cloud-platforms", "digital-workplace", "cybersecurity",
-        "development-automation", "data-platforms", "ai-engineering", "operations-observability",
-        "service-management", "migration-engineering", "business-continuity", "architecture",
-        "governance-compliance", "documentation-engineering", "career-development", "lessons-learned",
-    ]
     errors: list[str] = []
+    try:
+        with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+    except (IOError, yaml.YAMLError) as e:
+        errors.append(f"FATAL: Could not read or parse mkdocs.yml: {e}")
+        return errors
+
+    def get_stacks_from_nav(nav_item: Any) -> set[str]:
+        """Recursively finds stack directory names from the 'nav' config."""
+        found_stacks = set()
+        if isinstance(nav_item, str) and ".md" in nav_item and "/" in nav_item:
+            found_stacks.add(Path(nav_item).parts[0])
+        elif isinstance(nav_item, dict):
+            for value in nav_item.values():
+                found_stacks.update(get_stacks_from_nav(value))
+        elif isinstance(nav_item, list):
+            for item in nav_item:
+                found_stacks.update(get_stacks_from_nav(item))
+        return found_stacks
+
+    stacks_nav_section = next((item.get("Stacks") for item in config.get("nav", []) if isinstance(item, dict) and "Stacks" in item), None)
+    if not stacks_nav_section:
+        errors.append("FATAL: Could not find 'Stacks' section in mkdocs.yml 'nav' configuration.")
+        return errors
+
+    expected_stacks = get_stacks_from_nav(stacks_nav_section)
+
     if not STACKS_DIR.is_dir():
         errors.append(f"FATAL: `stacks` directory not found at {STACKS_DIR}")
         return errors
@@ -78,7 +105,8 @@ def validate_structure() -> list[str]:
     missing_dirs: list[str] = []
     missing_indexes: list[str] = []
     missing_caps: list[str] = []
-    for stack in EXPECTED_STACKS:
+
+    for stack in sorted(list(expected_stacks)):
         stack_dir = STACKS_DIR / stack
         if not stack_dir.is_dir():
             missing_dirs.append(stack)
@@ -156,9 +184,11 @@ def validate_orphans() -> list[str]:
         if isinstance(item, str) and item.endswith(".md"):
             nav_files.add((STACKS_DIR / item).resolve())
         elif isinstance(item, dict):
-            [extract_nav(v) for v in item.values()] # type: ignore
+            for v in item.values():
+                extract_nav(v)
         elif isinstance(item, list):
-            [extract_nav(i) for i in item] # type: ignore
+            for i in item:
+                extract_nav(i)
     if "nav" in config: extract_nav(config["nav"])
     errors: list[str] = []
 
@@ -232,28 +262,33 @@ def write_report(report_path: Path, summary: dict[str, str], details: dict[str, 
     report_path.write_text("\n".join(report_content), encoding="utf-8")
     print(f"\nReport written to {report_path}")
 
-# --- Main CLI ---
+ALL_CHECKS = {
+    "structure": validate_structure,
+    "codeowners": validate_codeowners,
+    "links": validate_links,
+    "orphans": validate_orphans,
+    "frontmatter": validate_frontmatter,
+}
 
 def main() -> int:
     """Main entry point for the validation script."""
-    all_checks = {
-        "structure": validate_structure, "codeowners": validate_codeowners,
-        "links": validate_links, "orphans": validate_orphans, "frontmatter": validate_frontmatter,
-    }
+    # Ensure a fresh run every time by clearing any cached data.
+    clear_caches()
+
     parser = argparse.ArgumentParser(description="PETOS Knowledge Base Validator.", formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("checks", nargs="*", help=f"Which check(s) to run. Options: {', '.join(all_checks.keys())}. If none are specified, 'all' is run.")
+    parser.add_argument("checks", nargs="*", help=f"Which check(s) to run. Options: {', '.join(ALL_CHECKS.keys())}. If none are specified, 'all' is run.")
     parser.add_argument("--report-file", type=Path, help="Path to write a markdown report file.")
     args = parser.parse_args()
 
     # Manually validate choices to avoid argparse quirks with nargs='*' and an empty list.
-    valid_choices = set(all_checks.keys()) | {"all"}
+    valid_choices = set(ALL_CHECKS.keys()) | {"all"}
     if invalid_checks := set(args.checks) - valid_choices:
         invalid_str = "', '".join(sorted(list(invalid_checks)))
         parser.error(f"argument checks: invalid choice: '{invalid_str}' (choose from {', '.join(sorted(list(valid_choices)))})")
 
     # If no checks are provided on the command line, default to running all.
     checks_provided = args.checks if args.checks else ["all"]
-    checks_to_run = list(all_checks.keys()) if "all" in checks_provided else checks_provided
+    checks_to_run = list(ALL_CHECKS.keys()) if "all" in checks_provided else checks_provided
     print(f"Running validations: {', '.join(checks_to_run)}\n" + "-" * 40)
 
     summary: dict[str, str] = {}
@@ -261,7 +296,7 @@ def main() -> int:
     for name in checks_to_run:
         print(f"Running {name} validation...")
         try:
-            if errors := all_checks[name]():
+            if errors := ALL_CHECKS[name]():
                 summary[name] = "FAILED"
                 details[name] = errors
             else:

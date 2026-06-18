@@ -8,14 +8,7 @@ from flask import Flask, jsonify, redirect, render_template, url_for
 
 # Assuming validate.py is in the same directory.
 # We import the validation functions and the slug cache to allow clearing it.
-from validate import (
-    _SLUG_CACHE,
-    validate_codeowners,
-    validate_frontmatter,
-    validate_links,
-    validate_orphans,
-    validate_structure,
-)
+from validate import ALL_CHECKS, clear_caches
 
 app = Flask(__name__)
 
@@ -28,19 +21,10 @@ validation_results = {
 }
 _RESULTS_LOCK = Lock()
 
-ALL_CHECKS = {
-    "structure": validate_structure,
-    "codeowners": validate_codeowners,
-    "links": validate_links,
-    "orphans": validate_orphans,
-    "frontmatter": validate_frontmatter,
-}
-
-
 def run_all_validations():
     """Runs all validation checks and updates the global results cache."""
     # Clear the file content cache from validate.py to ensure fresh data on each run
-    _SLUG_CACHE.clear()
+    clear_caches()
 
     summary = {}
     details = {}
