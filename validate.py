@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import re
+from datetime import datetime, timezone
 import sys
 from pathlib import Path
 from urllib.parse import unquote
@@ -25,6 +26,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent
 STACKS_DIR = REPO_ROOT / "stacks"
 _SLUG_CACHE: dict[Path, set[str]] = {}
+_MKDOCS_CONFIG_CACHE: dict[str, Any] | None = None
 _ALL_MD_FILES_CACHE: list[Path] | None = None
 
 def clear_caches():
@@ -32,6 +34,19 @@ def clear_caches():
     _SLUG_CACHE.clear()
     global _ALL_MD_FILES_CACHE
     _ALL_MD_FILES_CACHE = None
+    global _MKDOCS_CONFIG_CACHE
+    _MKDOCS_CONFIG_CACHE = None
+
+def get_mkdocs_config() -> dict[str, Any]:
+    """Reads and caches the content of mkdocs.yml."""
+    global _MKDOCS_CONFIG_CACHE
+    if _MKDOCS_CONFIG_CACHE is None:
+        try:
+            with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f:
+                _MKDOCS_CONFIG_CACHE = yaml.safe_load(f) or {}
+        except (IOError, yaml.YAMLError):
+            _MKDOCS_CONFIG_CACHE = {}
+    return _MKDOCS_CONFIG_CACHE
 
 def get_all_markdown_files() -> list[Path]:
     """Returns a cached list of all markdown files in STACKS_DIR, excluding audit reports."""
@@ -71,11 +86,9 @@ def get_slugs_from_file(file_path: Path) -> set[str]:
 def validate_structure() -> list[str]:
     """Validates Layers 1 & 2: stack directories, indexes, and capabilities pages."""
     errors: list[str] = []
-    try:
-        with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
-    except (IOError, yaml.YAMLError) as e:
-        errors.append(f"FATAL: Could not read or parse mkdocs.yml: {e}")
+    config = get_mkdocs_config()
+    if not config:
+        errors.append("FATAL: Could not read or parse mkdocs.yml.")
         return errors
 
     def get_stacks_from_nav(nav_item: Any) -> set[str]:
@@ -99,10 +112,8 @@ def validate_structure() -> list[str]:
     expected_stacks = get_stacks_from_nav(stacks_nav_section)
 
     if not STACKS_DIR.is_dir():
-        # The `stacks` directory is missing, which is expected during initial refactoring.
-        # We will return no errors for this check and let other checks proceed.
-        # The other validation functions are designed to handle the missing directory gracefully.
-        return []
+        errors.append(f"FATAL: `stacks` directory not found at {STACKS_DIR}")
+        return errors
 
     missing_dirs: list[str] = []
     missing_indexes: list[str] = []
@@ -180,7 +191,7 @@ def validate_orphans() -> list[str]:
             if (path_part := unquote(link).split("#")[0]) and path_part.endswith(".md"):
                 linked_files.add((md_file.parent / Path(path_part)).resolve())
 
-    with open(REPO_ROOT / "mkdocs.yml", "r", encoding="utf-8") as f: config = yaml.safe_load(f)
+    config = get_mkdocs_config()
     def extract_nav(item: Any):
         """Recursively parse the mkdocs.yml 'nav' structure to find all file paths."""
         if isinstance(item, str) and item.endswith(".md"):
@@ -242,7 +253,6 @@ def validate_frontmatter() -> list[str]:
 
 def write_report(report_path: Path, summary: dict[str, str], details: dict[str, list[str]]):
     """Writes a validation summary to a markdown file."""
-    from datetime import datetime, timezone
 
     report_content = [
         "# Validation Report",

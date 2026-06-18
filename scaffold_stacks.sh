@@ -7,7 +7,7 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-REPO_ROOT=$(dirname "$(dirname "$(readlink -f "$0")")")
+REPO_ROOT=$(pwd) # Assume script is run from repository root
 STACKS_DIR="$REPO_ROOT/stacks"
 
 # Define the expected stack names
@@ -44,11 +44,38 @@ for stack in "${EXPECTED_STACKS[@]}"; do
     # Create the stack directory
     mkdir -p "$STACK_PATH"
     # Create the stack's main index.md
-    echo "# $(echo "$stack" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1,1)) substr($i,2) }}1') Stack" > "$STACK_PATH/index.md"
+    STACK_TITLE="$(echo "$stack" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1,1)) substr($i,2) }}1')"
+    STACK_TAG="$stack" # The stack name is already in the correct format for a tag
+    cat << EOF > "$STACK_PATH/index.md"
+---
+title: "$STACK_TITLE Stack"
+description: "Overview of the $STACK_TITLE technology stack."
+tags:
+  - $STACK_TAG
+  - overview
+---
+
+# $STACK_TITLE Stack
+
+This section covers the $STACK_TITLE stack.
+EOF
     
     # Create the capabilities directory and its index.md
     mkdir -p "$CAPABILITIES_PATH"
-    echo "# $(echo "$stack" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1,1)) substr($i,2) }}1') Capabilities" > "$CAPABILITIES_PATH/index.md"
+    CAPABILITIES_TITLE="$STACK_TITLE Capabilities"
+    cat << EOF > "$CAPABILITIES_PATH/index.md"
+---
+title: "$CAPABILITIES_TITLE"
+description: "Key capabilities and services within the $STACK_TITLE stack."
+tags:
+  - $STACK_TAG
+  - capabilities
+---
+
+# $CAPABILITIES_TITLE
+
+This page outlines the core capabilities of the $STACK_TITLE stack.
+EOF
 done
 
 echo "Scaffolding complete. You can now run 'python validate.py structure' to verify."
